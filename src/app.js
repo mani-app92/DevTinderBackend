@@ -7,10 +7,10 @@ app.use(express.json());
 app.use(express.urlencoded());
 
 app.post("/signup", async (req, res) => {
-    console.log("req", req.body);
     const userData = {
         firstName: req.body.firstName,
         lastName: req.body.lastName,
+        email: req.body.email,
         city: req.body.city,
         gender: req.body.gender,
         age: req.body.age,
@@ -19,6 +19,12 @@ app.post("/signup", async (req, res) => {
     const userModelObj =  new UserModel(userData);
     await userModelObj.save();
     res.send("User Added Successfully!!")
+})
+
+app.get("/feed", async (req, res) => {
+    const feedList = await UserModel.find({});
+    console.log("feedList", feedList);
+    res.send(feedList)
 })
 
 connectDatabase().then(() => {
