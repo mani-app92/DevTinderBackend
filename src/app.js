@@ -1,12 +1,16 @@
 const express = require("express");
 const app = express();
 const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
 const { connectDatabase } = require("./config/database.js");
 const UserModel = require("./models/user.js");
 const { SignupValidate } = require("./utils/SignupValidate.js");
+const userAuth = require("./middleware/userAuth.js");
 
 app.use(express.json());
 app.use(express.urlencoded());
+app.use(cookieParser());
 
 app.post("/signup", async (req, res) => {
     const userData = {
@@ -37,6 +41,13 @@ app.post("/signup", async (req, res) => {
     }
 })
 
+app.get("/profile", userAuth, async (req, res) => {
+    res.send({
+        status: "success",
+        payload: req.user
+    })
+})
+
 app.post("/login", async (req, res) => {
     const userData = {
         email: req.body.email,
@@ -53,6 +64,8 @@ app.post("/login", async (req, res) => {
         if(!match){
             throw new Error("Invalid credentials")
         }
+        const token = await jwt.sign({ _id: user._id }, "DevTinder@2025")
+        res.cookie("token", token);
         res.send({
             status: "success",
             message: "Login Successfully!!!"
